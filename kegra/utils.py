@@ -39,10 +39,10 @@ def load_data(path="data/cora/", dataset="cora"):
 
 def normalize_adj(adj, symmetric=True):
     if symmetric:
-        d = sp.diags(np.power(np.array(adj.sum(1)), -0.5).flatten())
+        d = sp.diags(np.power(np.array(adj.sum(1)), -0.5).flatten(), 0)
         a_norm = adj.dot(d).transpose().dot(d).tocsr()
     else:
-        d = sp.diags(np.power(np.array(adj.sum(1)), -1).flatten())
+        d = sp.diags(np.power(np.array(adj.sum(1)), -1).flatten(), 0)
         a_norm = d.dot(adj).tocsr()
     return a_norm
 
