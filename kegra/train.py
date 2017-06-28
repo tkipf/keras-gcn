@@ -57,7 +57,8 @@ H = Dropout(0.5)(H)
 Y = GraphConvolution(y.shape[1], support, activation='softmax')([H]+G)
 
 # Compile model
-model = Model(input=[X_in]+G, output=Y)
+# model = Model(input=[X_in]+G, output=Y)
+model = Model(inputs=[X_in]+G, outputs=Y)
 model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=0.01))
 
 # Helper variables for main training loop
@@ -73,7 +74,7 @@ for epoch in range(1, NB_EPOCH+1):
 
     # Single training iteration (we mask nodes without labels for loss calculation)
     model.fit(graph, y_train, sample_weight=train_mask,
-              batch_size=A.shape[0], nb_epoch=1, shuffle=False, verbose=0)
+              batch_size=A.shape[0], epochs=1, shuffle=False, verbose=0)
 
     # Predict on full dataset
     preds = model.predict(graph, batch_size=A.shape[0])

@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from keras import activations, initializations
+from keras import activations, initializers
 from keras import regularizers
 from keras.engine import Layer
 from keras.engine.topology import Node
@@ -63,6 +63,8 @@ class GraphInputLayer(Layer):
         input_tensor._uses_learning_phase = False
         input_tensor._keras_history = (self, 0, 0)
         shape = input_tensor._keras_shape
+
+        self.is_placeholder = True
         Node(self,
              inbound_layers=[],
              node_indices=[],
@@ -87,7 +89,7 @@ class GraphConvolution(Layer):
     def __init__(self, output_dim, support=1, init='glorot_uniform',
                  activation='linear', weights=None, W_regularizer=None,
                  b_regularizer=None, bias=False, **kwargs):
-        self.init = initializations.get(init)
+        self.init = initializers.get(init)
         self.activation = activations.get(activation)
         self.output_dim = output_dim  # number of features per node
         self.support = support  # filter support / number of weights
@@ -107,7 +109,12 @@ class GraphConvolution(Layer):
 
         super(GraphConvolution, self).__init__(**kwargs)
 
-    def get_output_shape_for(self, input_shapes):
+    # def get_output_shape_for(self, input_shapes):
+    #     features_shape = input_shapes[0]
+    #     output_shape = (features_shape[0], self.output_dim)
+    #     return output_shape  # (batch_size, output_dim)
+
+    def compute_output_shape(self, input_shapes):
         features_shape = input_shapes[0]
         output_shape = (features_shape[0], self.output_dim)
         return output_shape  # (batch_size, output_dim)
