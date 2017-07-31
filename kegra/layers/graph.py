@@ -1,85 +1,9 @@
 from __future__ import print_function
 
-from keras import activations, initializations
+from keras import activations, initializers
 from keras import regularizers
 from keras.engine import Layer
-from keras.engine.topology import Node
 import keras.backend as K
-
-
-def GraphInput(name=None, dtype=K.floatx(), sparse=False,
-          tensor=None):
-    """ TODO: Docstring """
-    shape = (None, None)
-    input_layer = GraphInputLayer(batch_input_shape=shape,
-                                name=name, sparse=sparse, input_dtype=dtype)
-    outputs = input_layer.inbound_nodes[0].output_tensors
-    if len(outputs) == 1:
-        return outputs[0]
-    else:
-        return outputs
-
-
-class GraphInputLayer(Layer):
-    """ TODO: Docstring """
-    def __init__(self, input_shape=None, batch_input_shape=None,
-                 input_dtype=None, sparse=False, name=None):
-        self.input_spec = None
-        self.supports_masking = False
-        self.uses_learning_phase = False
-        self.trainable = False
-        self.built = True
-
-        self.inbound_nodes = []
-        self.outbound_nodes = []
-
-        self.trainable_weights = []
-        self.non_trainable_weights = []
-        self.constraints = {}
-
-        self.sparse = sparse
-
-        if not name:
-            prefix = 'input'
-            name = prefix + '_' + str(K.get_uid(prefix))
-        self.name = name
-
-        if not batch_input_shape:
-            assert input_shape, 'An Input layer should be passed either a `batch_input_shape` or an `input_shape`.'
-            batch_input_shape = (None,) + tuple(input_shape)
-        else:
-            batch_input_shape = tuple(batch_input_shape)
-        if not input_dtype:
-            input_dtype = K.floatx()
-
-        self.batch_input_shape = batch_input_shape
-        self.input_dtype = input_dtype
-
-        input_tensor = K.placeholder(shape=batch_input_shape,
-                                     dtype=input_dtype,
-                                     sparse=self.sparse,
-                                     name=self.name)
-
-        input_tensor._uses_learning_phase = False
-        input_tensor._keras_history = (self, 0, 0)
-        shape = input_tensor._keras_shape
-        Node(self,
-             inbound_layers=[],
-             node_indices=[],
-             tensor_indices=[],
-             input_tensors=[input_tensor],
-             output_tensors=[input_tensor],
-             input_masks=[None],
-             output_masks=[None],
-             input_shapes=[shape],
-             output_shapes=[shape])
-
-    def get_config(self):
-        config = {'batch_input_shape': self.batch_input_shape,
-                  'input_dtype': self.input_dtype,
-                  'sparse': self.sparse,
-                  'name': self.name}
-        return config
 
 
 class GraphConvolution(Layer):
@@ -87,7 +11,7 @@ class GraphConvolution(Layer):
     def __init__(self, output_dim, support=1, init='glorot_uniform',
                  activation='linear', weights=None, W_regularizer=None,
                  b_regularizer=None, bias=False, **kwargs):
-        self.init = initializations.get(init)
+        self.init = initializers.get(init)
         self.activation = activations.get(activation)
         self.output_dim = output_dim  # number of features per node
         self.support = support  # filter support / number of weights
@@ -107,7 +31,7 @@ class GraphConvolution(Layer):
 
         super(GraphConvolution, self).__init__(**kwargs)
 
-    def get_output_shape_for(self, input_shapes):
+    def compute_output_shape(self, input_shapes):
         features_shape = input_shapes[0]
         output_shape = (features_shape[0], self.output_dim)
         return output_shape  # (batch_size, output_dim)
