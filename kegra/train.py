@@ -5,8 +5,8 @@ from keras.models import Model
 from keras.optimizers import Adam
 from keras.regularizers import l2
 
-from layers.graph import GraphConvolution
-from utils import *
+from kegra.layers.graph import GraphConvolution
+from kegra.utils import *
 
 import time
 
