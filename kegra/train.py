@@ -5,7 +5,7 @@ from keras.models import Model
 from keras.optimizers import Adam
 from keras.regularizers import l2
 
-from kegra.layers.graph import GraphConvolution, GraphInput
+from kegra.layers.graph import GraphConvolution
 from kegra.utils import *
 
 import time
@@ -31,7 +31,7 @@ if FILTER == 'localpool':
     A_ = preprocess_adj(A, SYM_NORM)
     support = 1
     graph = [X, A_]
-    G = [GraphInput(sparse=True)]
+    G = [Input(shape=(None, None), batch_shape=(None, None), sparse=True)]
 
 elif FILTER == 'chebyshev':
     """ Chebyshev polynomial basis filters (Defferard et al., NIPS 2016)  """
@@ -41,7 +41,7 @@ elif FILTER == 'chebyshev':
     T_k = chebyshev_polynomial(L_scaled, MAX_DEGREE)
     support = MAX_DEGREE + 1
     graph = [X]+T_k
-    G = [GraphInput(sparse=True) for _ in range(support)]
+    G = [Input(shape=(None, None), batch_shape=(None, None), sparse=True) for _ in range(support)]
 
 else:
     raise Exception('Invalid filter type.')
