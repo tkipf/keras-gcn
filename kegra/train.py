@@ -23,7 +23,7 @@ X, A, y = load_data(dataset=DATASET)
 y_train, y_val, y_test, idx_train, idx_val, idx_test, train_mask = get_splits(y)
 
 # Normalize X
-X = np.diag(1./np.array(X.sum(1)).flatten()).dot(X)
+X /= X.sum(1).reshape(-1, 1)
 
 if FILTER == 'localpool':
     """ Local pooling filters (see 'renormalization trick' in Kipf & Welling, arXiv 2016) """
