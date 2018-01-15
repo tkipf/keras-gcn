@@ -52,7 +52,7 @@ X_in = Input(shape=(X.shape[1],))
 # NOTE: We pass arguments for graph convolutional layers as a list of tensors.
 # This is somewhat hacky, more elegant options would require rewriting the Layer base class.
 H = Dropout(0.5)(X_in)
-H = GraphConvolution(16, support, activation='relu', W_regularizer=l2(5e-4))([H]+G)
+H = GraphConvolution(16, support, activation='relu', kernel_regularizer=l2(5e-4))([H]+G)
 H = Dropout(0.5)(H)
 Y = GraphConvolution(y.shape[1], support, activation='softmax')([H]+G)
 

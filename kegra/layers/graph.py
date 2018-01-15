@@ -1,87 +1,100 @@
 from __future__ import print_function
 
-from keras import activations, initializers
+from keras import activations, initializers, constraints
 from keras import regularizers
 from keras.engine import Layer
 import keras.backend as K
 
 
 class GraphConvolution(Layer):
-    """TODO: Docstring"""
-    def __init__(self, output_dim, support=1, init='glorot_uniform',
-                 activation='linear', weights=None, W_regularizer=None,
-                 b_regularizer=None, bias=False, **kwargs):
-        self.init = initializers.get(init)
-        self.activation = activations.get(activation)
-        self.output_dim = output_dim  # number of features per node
-        self.support = support  # filter support / number of weights
-
-        assert support >= 1
-
-        self.W_regularizer = regularizers.get(W_regularizer)
-        self.b_regularizer = regularizers.get(b_regularizer)
-
-        self.bias = bias
-        self.initial_weights = weights
-
-        # these will be defined during build()
-        self.input_dim = None
-        self.W = None
-        self.b = None
-
+    """Basic graph convolution layer as in https://arxiv.org/abs/1609.02907"""
+    def __init__(self, units, support=1,
+                 activation=None,
+                 use_bias=True,
+                 kernel_initializer='glorot_uniform',
+                 bias_initializer='zeros',
+                 kernel_regularizer=None,
+                 bias_regularizer=None,
+                 activity_regularizer=None,
+                 kernel_constraint=None,
+                 bias_constraint=None,
+                 **kwargs):
+        if 'input_shape' not in kwargs and 'input_dim' in kwargs:
+            kwargs['input_shape'] = (kwargs.pop('input_dim'),)
         super(GraphConvolution, self).__init__(**kwargs)
+        self.units = units
+        self.activation = activations.get(activation)
+        self.use_bias = use_bias
+        self.kernel_initializer = initializers.get(kernel_initializer)
+        self.bias_initializer = initializers.get(bias_initializer)
+        self.kernel_regularizer = regularizers.get(kernel_regularizer)
+        self.bias_regularizer = regularizers.get(bias_regularizer)
+        self.activity_regularizer = regularizers.get(activity_regularizer)
+        self.kernel_constraint = constraints.get(kernel_constraint)
+        self.bias_constraint = constraints.get(bias_constraint)
+        self.supports_masking = True
 
-    # def get_output_shape_for(self, input_shapes):
-    #     features_shape = input_shapes[0]
-    #     output_shape = (features_shape[0], self.output_dim)
-    #     return output_shape  # (batch_size, output_dim)
+        self.support = support
+        assert support >= 1
 
     def compute_output_shape(self, input_shapes):
         features_shape = input_shapes[0]
-        output_shape = (features_shape[0], self.output_dim)
+        output_shape = (features_shape[0], self.units)
         return output_shape  # (batch_size, output_dim)
 
     def build(self, input_shapes):
         features_shape = input_shapes[0]
         assert len(features_shape) == 2
-        self.input_dim = features_shape[1]
+        input_dim = features_shape[1]
 
-        self.W = self.add_weight((self.input_dim * self.support, self.output_dim),
-                                 initializer=self.init,
-                                 name='{}_W'.format(self.name),
-                                 regularizer=self.W_regularizer)
-        if self.bias:
-            self.b = self.add_weight((self.output_dim,),
-                                     initializer='zero',
-                                     name='{}_b'.format(self.name),
-                                     regularizer=self.b_regularizer)
-
-        if self.initial_weights is not None:
-            self.set_weights(self.initial_weights)
-            del self.initial_weights
+        self.kernel = self.add_weight(shape=(input_dim, self.units),
+                                      initializer=self.kernel_initializer,
+                                      name='kernel',
+                                      regularizer=self.kernel_regularizer,
+                                      constraint=self.kernel_constraint)
+        if self.use_bias:
+            self.bias = self.add_weight(shape=(self.units,),
+                                        initializer=self.bias_initializer,
+                                        name='bias',
+                                        regularizer=self.bias_regularizer,
+                                        constraint=self.bias_constraint)
+        else:
+            self.bias = None
+        self.built = True
 
     def call(self, inputs, mask=None):
         features = inputs[0]
-        A = inputs[1:]  # list of basis functions
+        basis = inputs[1:]
 
-        # convolve
         supports = list()
         for i in range(self.support):
-            supports.append(K.dot(A[i], features))
+            supports.append(K.dot(basis[i], features))
         supports = K.concatenate(supports, axis=1)
-        output = K.dot(supports, self.W)
+        output = K.dot(supports, self.kernel)
 
         if self.bias:
-            output += self.b
+            output += self.bias
         return self.activation(output)
 
     def get_config(self):
-        config = {'output_dim': self.output_dim,
-                  'init': self.init.__name__,
-                  'activation': self.activation.__name__,
-                  'W_regularizer': self.W_regularizer.get_config() if self.W_regularizer else None,
-                  'b_regularizer': self.b_regularizer.get_config() if self.b_regularizer else None,
-                  'bias': self.bias,
-                  'input_dim': self.input_dim}
+        config = {'units': self.units,
+                  'support': self.support,
+                  'activation': activations.serialize(self.activation),
+                  'use_bias': self.use_bias,
+                  'kernel_initializer': initializers.serialize(
+                      self.kernel_initializer),
+                  'bias_initializer': initializers.serialize(
+                      self.bias_initializer),
+                  'kernel_regularizer': regularizers.serialize(
+                      self.kernel_regularizer),
+                  'bias_regularizer': regularizers.serialize(
+                      self.bias_regularizer),
+                  'activity_regularizer': regularizers.serialize(
+                      self.activity_regularizer),
+                  'kernel_constraint': constraints.serialize(
+                      self.kernel_constraint),
+                  'bias_constraint': constraints.serialize(self.bias_constraint)
+        }
+
         base_config = super(GraphConvolution, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
