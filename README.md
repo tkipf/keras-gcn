@@ -1,7 +1,7 @@
 Deep Learning on Graphs with Keras
 ====
 
-Keras-based implementation of graph convolutional networks for semi-supervised classification, similar to the model proposed in: 
+Keras-based implementation of graph convolutional networks for semi-supervised classification.
 
 Thomas N. Kipf, Max Welling, [Semi-Supervised Classification with Graph Convolutional Networks](http://arxiv.org/abs/1609.02907) (ICLR 2017)
 
@@ -9,7 +9,7 @@ For a high-level explanation, have a look at our blog post:
 
 Thomas Kipf, [Graph Convolutional Networks](http://tkipf.github.io/graph-convolutional-networks/) (2016)
 
-**NOTE: This code is not intended to reproduce the experiments from the paper as the initialization scheme, dropout scheme, and dataset splits differ from the official implementation in TensorFlow: https://github.com/tkipf/gcn**
+**NOTE: This code is not intended to reproduce the experiments from the paper as the initialization scheme, dropout scheme, and dataset splits differ from the original implementation in TensorFlow: https://github.com/tkipf/gcn**
 
 Installation
 ------------
