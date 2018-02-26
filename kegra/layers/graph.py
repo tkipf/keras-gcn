@@ -47,7 +47,8 @@ class GraphConvolution(Layer):
         assert len(features_shape) == 2
         input_dim = features_shape[1]
 
-        self.kernel = self.add_weight(shape=(input_dim, self.units),
+        self.kernel = self.add_weight(shape=(input_dim * self.support,
+                                             self.units),
                                       initializer=self.kernel_initializer,
                                       name='kernel',
                                       regularizer=self.kernel_regularizer,
