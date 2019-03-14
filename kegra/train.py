@@ -17,10 +17,13 @@ MAX_DEGREE = 2  # maximum polynomial degree
 SYM_NORM = True  # symmetric (True) vs. left-only (False) normalization
 NB_EPOCH = 200
 PATIENCE = 10  # early stopping patience
+TRAIN_NUM = 200 #  munbers of train samples
+VAL_NUM = 300 # munbers of validation samples
+TEST_NUM = 1000 # munbers of test samples
 
 # Get data
 X, A, y = load_data(dataset=DATASET)
-y_train, y_val, y_test, idx_train, idx_val, idx_test, train_mask = get_splits(y)
+y_train, y_val, y_test, idx_train, idx_val, idx_test, train_mask = get_splits(y, TRAIN_NUM, VAL_NUM, TEST_NUM))
 
 # Normalize X
 X /= X.sum(1).reshape(-1, 1)
