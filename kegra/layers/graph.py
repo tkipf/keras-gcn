@@ -44,7 +44,6 @@ class GraphConvolution(Layer):
 
     def build(self, input_shapes):
         features_shape = input_shapes[0]
-        print(len(features_shape))
         # assert len(features_shape) == 2
         input_dim = features_shape[-1]
 
