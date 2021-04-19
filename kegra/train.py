@@ -31,7 +31,7 @@ if FILTER == 'localpool':
     A_ = preprocess_adj(A, SYM_NORM)
     support = 1
     graph = [X, A_]
-    G = [Input(shape=(None, None), batch_shape=(None, None), sparse=True)]
+    G = [Input(shape=(None, None), sparse=True)]
 
 elif FILTER == 'chebyshev':
     """ Chebyshev polynomial basis filters (Defferard et al., NIPS 2016)  """
