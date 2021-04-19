@@ -44,7 +44,6 @@ class GraphConvolution(Layer):
 
     def build(self, input_shapes):
         features_shape = input_shapes[0]
-        # assert len(features_shape) == 2
         input_dim = features_shape[-1]
 
         self.kernel = self.add_weight(shape=(input_dim * self.support,
@@ -69,7 +68,6 @@ class GraphConvolution(Layer):
 
         supports = list()
         for i in range(self.support):
-            # print(type(basis[i]), type(features))
             supports.append(K.dot(tf.sparse.to_dense(basis[i]), features))
         supports = K.concatenate(supports, axis=1)
         output = K.dot(supports, self.kernel)
